@@ -10,7 +10,8 @@ readme = "README.md"
 python = ">=3.13,<3.14"
 numpy = "^2.3.4"
 torch = "^2.9.0"
-gymnasium = "^1.2.1"
+gymnasium = {extras = ["box2d"], version = "^1.2.2"}
+pyyaml = "^6.0.3"
 
 
 [build-system]
