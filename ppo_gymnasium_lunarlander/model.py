@@ -1,7 +1,7 @@
 """
 Actor-Critic Network for PPO agent in Lunar Lander environment.
 """
-from typing import Any, Tuple
+from typing import Tuple
 
 import torch
 from torch import nn
@@ -33,20 +33,23 @@ class ActorCritic(nn.Module):
         action_logits = self.actor_head(x)
         action_probs = F.softmax(action_logits, dim=-1)
 
-        state_value = self.critic_head(state)
+        state_value = self.critic_head(x)
 
         return action_probs, state_value
 
-    def act(self, state: torch.Tensor) -> Tuple[Any, torch.Tensor]:
+    def act(
+        self,
+        state: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Select action based on the current policy."""
-        action_probs, _ = self.forward(state)
+        action_probs, state_value = self.forward(state)
 
         dist = Categorical(action_probs)
         action = dist.sample()
 
         action_log_prob = dist.log_prob(action)
 
-        return action.item(), action_log_prob
+        return action.detach(), action_log_prob.detach(), state_value.detach()
 
     def evaluate(
         self,
