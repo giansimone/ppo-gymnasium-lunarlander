@@ -5,10 +5,16 @@ from typing import Tuple
 
 import gymnasium as gym
 
-
-def make_env(env_id: str, render_mode=None) -> Tuple[gym.Env, int, int]:
+def make_env(
+    env_id: str,
+    render_mode: str | None = None,
+    normalise_obs: bool = False
+) -> Tuple[gym.Env, int, int]:
     "Create and wrap environment."
     env = gym.make(env_id, render_mode=render_mode)
+
+    if normalise_obs:
+        env = gym.wrappers.NormalizeObservation(env)
 
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
@@ -19,7 +25,8 @@ def make_env(env_id: str, render_mode=None) -> Tuple[gym.Env, int, int]:
 def make_vec_env(
     env_id: str,
     num_envs: int,
-    render_mode=None
+    render_mode: str | None = None,
+    normalise_obs: bool = False,
 ) -> Tuple[gym.vector.VectorEnv, int, int]:
     "Create and wrap environment."
     envs = gym.make_vec(
@@ -28,6 +35,9 @@ def make_vec_env(
         vectorization_mode="async",
         render_mode=render_mode,
     )
+
+    if normalise_obs:
+        envs = gym.wrappers.vector.NormalizeObservation(envs)
 
     env_state_dim = envs.single_observation_space.shape[0]
     env_action_dim = envs.single_action_space.n

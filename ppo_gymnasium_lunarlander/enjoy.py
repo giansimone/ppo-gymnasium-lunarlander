@@ -17,7 +17,11 @@ def enjoy(artifact_path: Path, n_episodes: int) -> None:
     env_id = config["env_id"]
     hidden_dim = config["hidden_dim"]
 
-    env, state_dim, action_dim = make_env(env_id, render_mode="human")
+    env, state_dim, action_dim = make_env(
+        env_id,
+        render_mode="human",
+        normalise_obs=config["normalise_obs"],
+    )
 
     agent = SimpleAgent(state_dim, action_dim, hidden_dim)
     agent.load_model(artifact_path)

@@ -1,18 +1,18 @@
 #Environment
 env_id: LunarLander-v3
 num_envs: 16
-normalise_observations: true
+normalise_obs: false
 
 #Network Architecture
 hidden_dim: 128
 
 #Training
-total_timesteps: 1_000_000
+total_timesteps: 10_000_000
 n_steps: 1024
 batch_size: 64
 
 #PPO Agent
-learning_rate: 0.001
+learning_rate: 0.0003
 gamma: 0.999
 gae_lambda: 0.95
 clip_epsilon: 0.2

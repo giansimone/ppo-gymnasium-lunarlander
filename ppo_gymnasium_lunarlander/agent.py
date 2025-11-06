@@ -32,8 +32,10 @@ class Agent:
         value_coef: float,
         entropy_coef: float,
         max_grad_norm: float,
+        total_updates: int,
     ) -> None:
         self.lr = lr
+        self.init_lr = self.lr
         self.gamma = gamma
         self.gae_lambda = gae_lambda
         self.clip_epsilon = clip_epsilon
@@ -42,6 +44,7 @@ class Agent:
         self.value_coef = value_coef
         self.entropy_coef = entropy_coef
         self.max_grad_norm = max_grad_norm
+        self.total_updates = total_updates
 
         self.policy = ActorCritic(state_dim, action_dim, hidden_dim)
         self.optimiser = optim.Adam(self.policy.parameters(), lr=self.lr)
@@ -82,8 +85,12 @@ class Agent:
 
     def learn(self, next_state: np.ndarray) -> None:
         """Update policy and value networks using PPO."""
-        states, actions, old_log_probs, rewards_2d, old_values_flat, dones_2d = self.buffer.get()
         eps = 1e-8
+
+        self.optimiser.param_groups[0]["lr"] = self.lr
+        self.lr -= self.init_lr / self.total_updates
+
+        states, actions, old_log_probs, rewards_2d, old_values_flat, dones_2d = self.buffer.get()
 
         old_values_2d = old_values_flat.reshape(rewards_2d.shape)
 
@@ -116,9 +123,13 @@ class Agent:
                 batch_advantages = advantages[batch_idx]
                 batch_returns = returns[batch_idx]
 
+                batch_old_values = old_values_flat[batch_idx]
+
                 current_log_probs, current_values, entropy = self.policy.evaluate(
                     batch_states, batch_actions
                 )
+
+                current_values = current_values.squeeze()
 
                 ratios = torch.exp(current_log_probs - batch_old_log_probs)
 
@@ -130,7 +141,14 @@ class Agent:
 
                 actor_loss = - torch.min(surr1, surr2).mean()
 
-                critic_loss = F.mse_loss(current_values.squeeze(), batch_returns)
+                values_clipped = batch_old_values + torch.clamp(
+                    current_values - batch_old_values,
+                    - self.clip_epsilon,
+                    self.clip_epsilon,
+                )
+                loss_v1 = F.mse_loss(current_values, batch_returns)
+                loss_v2 = F.mse_loss(values_clipped, batch_returns)
+                critic_loss = torch.max(loss_v1, loss_v2).mean()
 
                 entropy_loss = - entropy.mean()
 

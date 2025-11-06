@@ -30,11 +30,14 @@ def train(config_filename: Path = Path("config.yaml")):
     envs, state_dim, action_dim = make_vec_env(
         env_id,
         num_envs,
-        render_mode=None
+        render_mode=None,
+        normalise_obs=config["normalise_obs"],
     )
 
     print(f"| Environment: {env_id} (x{num_envs})"
           f"| State space: {state_dim}, Action space: {action_dim}")
+
+    num_updates = config["total_timesteps"] // n_steps // num_envs
 
     agent = Agent(
         n_steps=n_steps,
@@ -51,9 +54,9 @@ def train(config_filename: Path = Path("config.yaml")):
         value_coef=config["value_coef"],
         entropy_coef=config["entropy_coef"],
         max_grad_norm=config["max_grad_norm"],
+        total_updates=num_updates,
     )
 
-    num_updates = config["total_timesteps"] // n_steps // num_envs
 
     print(f"Total timesteps: {config['total_timesteps']}, Total updates: {num_updates}")
 
@@ -68,9 +71,7 @@ def train(config_filename: Path = Path("config.yaml")):
 
             action = action_tensor.numpy()
 
-            next_state, reward, terminated, truncated, _ = envs.step(action)
-
-            done = terminated | truncated
+            next_state, reward, terminated, _, _ = envs.step(action)
 
             agent.buffer.add(
                 torch.tensor(state),
@@ -78,7 +79,7 @@ def train(config_filename: Path = Path("config.yaml")):
                 log_prob,
                 reward,
                 value,
-                done,
+                terminated,
             )
 
             state = next_state
