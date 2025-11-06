@@ -1,0 +1,27 @@
+#Environment
+env_id: LunarLander-v3
+num_envs: 16
+
+#Network Architecture
+hidden_dim: 128
+
+#Training
+total_timesteps: 10_000_000
+n_steps: 1024
+batch_size: 64
+
+#PPO Agent
+learning_rate: 0.001
+gamma: 0.999
+gae_lambda: 0.95
+clip_epsilon: 0.2
+value_coef: 0.5
+entropy_coef: 0.01
+ppo_epochs: 10
+max_grad_norm: 0.5
+
+#Logging
+log_dir: runs/
+
+#System
+seed: 42

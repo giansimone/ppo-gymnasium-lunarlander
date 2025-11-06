@@ -60,7 +60,7 @@ class RolloutBuffer:
     def get(self) -> Tuple[torch.Tensor, ...]:
         """Returns all experiences from the buffer."""
         if self.step_idx != self.n_steps:
-            print("Warning: Buffer not full. Only {self.step_idx} steps collected.")
+            print(f"Warning: Buffer not full. Only {self.step_idx} steps collected.")
 
         states = self.states.reshape(-1, self.state_dim)
         actions = self.actions.reshape(-1)

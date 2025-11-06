@@ -1,7 +1,11 @@
 """
 PPO Agent for Lunar Lander environment using Gymnasium.
 """
+from pathlib import Path
+from typing import Tuple
+
 import torch
+from torch import nn
 from torch import optim
 from torch.nn import functional as F
 import numpy as np
@@ -27,6 +31,7 @@ class Agent:
         ppo_epochs: int,
         value_coef: float,
         entropy_coef: float,
+        max_grad_norm: float,
     ) -> None:
         self.lr = lr
         self.gamma = gamma
@@ -36,13 +41,16 @@ class Agent:
         self.ppo_epochs = ppo_epochs
         self.value_coef = value_coef
         self.entropy_coef = entropy_coef
+        self.max_grad_norm = max_grad_norm
 
         self.policy = ActorCritic(state_dim, action_dim, hidden_dim)
         self.optimiser = optim.Adam(self.policy.parameters(), lr=self.lr)
 
         self.buffer = RolloutBuffer(n_steps, num_envs, state_dim, action_dim)
 
-    def select_action(self, state: np.ndarray):
+    def select_action(
+        self, state: np.ndarray
+    )-> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Select action based on current policy."""
         state_tensor = torch.tensor(state, dtype=torch.float32)
         with torch.no_grad():
@@ -116,7 +124,7 @@ class Agent:
 
                 surr1 = ratios * batch_advantages
                 surr2 = (
-                    torch.clamp(ratios, 1 - self.clip_epsilon, 1 + self.clip_epsilon) * 
+                    torch.clamp(ratios, 1 - self.clip_epsilon, 1 + self.clip_epsilon) *
                     batch_advantages
                 )
 
@@ -134,6 +142,71 @@ class Agent:
 
                 self.optimiser.zero_grad()
                 loss.backward()
+
+                nn.utils.clip_grad_norm_(self.policy.parameters(), self.max_grad_norm) 
+
                 self.optimiser.step()
 
         self.buffer.clear()
+
+    def save_model(self, filepath: Path) -> None:
+        """Save the model to the specified filepath."""
+        try:
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            checkpoint = {
+                "policy_state_dict": self.policy.state_dict(),
+                "optimiser_state_dict": self.optimiser.state_dict(),
+            }
+            torch.save(checkpoint, filepath)
+            print(f"Model saved successfully to {filepath}")
+        except IOError as e:
+            print(f"I/O error({e.errno}) while saving model at {filepath}: {e.strerror}")
+
+    def load_model(self, filepath: Path) -> None:
+        """Load the model from the specified filepath."""
+        if not filepath.exists():
+            print(f"File not found: {filepath}")
+            return
+        try:
+            checkpoint = torch.load(filepath)
+            policy_state = checkpoint.get("policy_state_dict")
+            optimiser_state = checkpoint.get("optimiser_state_dict")
+
+            self.policy.load_state_dict(policy_state, strict=False)
+            self.optimiser.load_state_dict(optimiser_state)
+            print(f"Model loaded successfully from {filepath}")
+        except FileNotFoundError:
+            print(f"File not found: {filepath}")
+
+
+class SimpleAgent:
+    """Simple Agent for enjoying a trained PPO model."""
+    def __init__(
+        self,
+        state_dim: int,
+        action_dim: int,
+        hidden_dim: int,
+    ):
+        self.policy = ActorCritic(state_dim, action_dim, hidden_dim)
+
+    def select_action(self, state: np.ndarray) -> np.ndarray:
+        """Select action based on the policy."""
+        state_tensor = torch.tensor(state, dtype=torch.float32)
+        with torch.no_grad():
+            action, _, _ = self.policy.act(state_tensor)
+
+        return action.numpy()
+
+    def load_model(self, filepath: Path) -> None:
+        """Load the model from the specified filepath."""
+        if not filepath.exists():
+            print(f"File not found: {filepath}")
+            return
+        try:
+            checkpoint = torch.load(filepath)
+            policy_state = checkpoint.get("policy_state_dict")
+
+            self.policy.load_state_dict(policy_state, strict=False)
+            print(f"Model loaded successfully from {filepath}")
+        except FileNotFoundError:
+            print(f"File not found: {filepath}")
