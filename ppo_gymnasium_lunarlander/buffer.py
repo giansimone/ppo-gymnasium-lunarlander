@@ -22,7 +22,7 @@ class RolloutBuffer:
         self.action_dim = action_dim
 
         self.states = torch.zeros((n_steps, num_envs, state_dim))
-        self.actions = torch.zeros((n_steps, num_envs), dtype=torch.long)
+        self.actions = torch.zeros((n_steps, num_envs), dtype=torch.int64)
         self.log_probs = torch.zeros((n_steps, num_envs))
         self.rewards = torch.zeros((n_steps, num_envs))
         self.values = torch.zeros((n_steps, num_envs))

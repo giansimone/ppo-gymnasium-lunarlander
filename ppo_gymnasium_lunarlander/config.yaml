@@ -1,12 +1,13 @@
 #Environment
 env_id: LunarLander-v3
 num_envs: 16
+normalise_observations: true
 
 #Network Architecture
 hidden_dim: 128
 
 #Training
-total_timesteps: 10_000_000
+total_timesteps: 1_000_000
 n_steps: 1024
 batch_size: 64
 

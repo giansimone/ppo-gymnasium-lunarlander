@@ -206,7 +206,7 @@ class SimpleAgent:
             checkpoint = torch.load(filepath)
             policy_state = checkpoint.get("policy_state_dict")
 
-            self.policy.load_state_dict(policy_state)
+            self.policy.load_state_dict(policy_state, strict=False)
             print(f"Model loaded successfully from {filepath}")
         except FileNotFoundError:
             print(f"File not found: {filepath}")
