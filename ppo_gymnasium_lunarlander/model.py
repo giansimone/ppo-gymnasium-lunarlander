@@ -39,7 +39,7 @@ class ActorCritic(nn.Module):
 
     def act(
         self,
-        state: torch.Tensor
+        state: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Select action based on the current policy."""
         action_probs, state_value = self.forward(state)

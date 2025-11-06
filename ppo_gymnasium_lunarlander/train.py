@@ -5,6 +5,7 @@ from pathlib import Path
 from datetime import datetime
 
 import torch
+from tqdm.auto import tqdm
 
 from agent import Agent
 from environment import make_vec_env
@@ -61,7 +62,7 @@ def train(config_filename: Path = Path("config.yaml")):
 
     next_state = state
 
-    for update in range(1, num_updates + 1):
+    for update in tqdm(range(1, num_updates + 1)):
 
         for _ in range(n_steps):
             action_tensor, log_prob, value = agent.select_action(state)
@@ -84,8 +85,6 @@ def train(config_filename: Path = Path("config.yaml")):
             state = next_state
 
         agent.learn(next_state)
-
-        print(f"Update {update}/{num_updates} completed.")
 
     agent.save_model(run_dir / "final_model.pt")
 

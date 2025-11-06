@@ -37,7 +37,7 @@ def enjoy(artifact_path: Path, n_episodes: int) -> None:
             state = next_state
             episode_reward += float(reward)
 
-            print(f"Lunar Lander Episode {episode} | Reward: {episode_reward:.2f}")
+        print(f"Lunar Lander Episode {episode} | Reward: {episode_reward:.2f}")
 
     env.close()
 
