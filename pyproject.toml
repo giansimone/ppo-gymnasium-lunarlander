@@ -1,10 +1,29 @@
 [tool.poetry]
 name = "ppo-gymnasium-lunarlander"
 version = "0.1.0"
-description = ""
+description = "A Proximal Policy Optimization (PPO) implementation for the Lunar Lander environment using Gymnasium and PyTorch."
 authors = ["Giansimone Perrino <hello@giansimone.dev>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/giansimone/ppo-gymnasium-lunarlander"
+packages = [
+    {include = "ppo_gymnasium_lunarlander"},
+]
+keywords = [
+    "reinforcement-learning",
+    "deep-reinforcement-learning",
+    "proximal-policy-optimization",
+    "ppo",
+    "gymnasium",
+    "lunar-lander",
+    "pytorch",
+]
+classifiers = [
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
