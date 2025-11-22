@@ -5,6 +5,7 @@ from typing import Tuple
 
 import gymnasium as gym
 
+
 def make_env(
     env_id: str,
     render_mode: str | None = None,

@@ -6,19 +6,35 @@ A PyTorch implementation of the Proximal Policy Optimization (PPO) algorithm app
 
 ## Installation
 
-You can clone the repository and install the dependencies using Poetry:
+You can clone the repository and install the required dependencies using Poetry or pip. This project requires **Python 3.13**.
+
+### Using Poetry (Recommended)
 
 ```bash
-git clone https://github.com/giansimone/ppo-gymnasium-lunarlander.git
+# 1. Clone the repository
+git clone [https://github.com/giansimone/ppo-gymnasium-lunarlander.git](https://github.com/giansimone/ppo-gymnasium-lunarlander.git)
 cd ppo-gymnasium-lunarlander
+
+# 2. Initialize environment and install dependencies
+poetry env use python3.13
 poetry install
+
+# 3. Activate the shell
+eval $(poetry env activate)
 ```
 
-Alternatively, you can clone the repository and install the dependencies locally using pip:
+### Using Pip
 
 ```bash
-git clone https://github.com/giansimone/ppo-gymnasium-lunarlander.git
+# 1. Clone the repository
+git clone [https://github.com/giansimone/ppo-gymnasium-lunarlander.git](https://github.com/giansimone/ppo-gymnasium-lunarlander.git)
 cd ppo-gymnasium-lunarlander
+
+# 2. Create and activate virtual environment
+python3.13 -m venv venv
+source venv/bin/activate
+
+# 3. Install package in editable mode
 pip install -e .
 ```
 
@@ -28,14 +44,14 @@ pip install -e .
 ppo-gymnasium-lunarlander/
 ├── ppo_gymnasium_lunarlander/
 │   ├── __init__.py
-│   ├── agent.py
-│   ├── buffer.py
-│   ├── config.yaml
-│   ├── enjoy.yaml
-│   ├── environment.py
-│   ├── export.py
-│   ├── model.py
-│   ├── train.py
+│   ├── agent.py       # PPO Agent implementation
+│   ├── buffer.py      # Rollout Buffer
+│   ├── config.yaml    # Training hyperparameters
+│   ├── enjoy.py       # Script to enjoy a trained agent
+│   ├── environment.py # Gym environment wrappers
+│   ├── export.py      # Hugging Face export script
+│   ├── model.py       # Actor/Critic Networks
+│   ├── train.py       # Main training loop
 │   └── utils.py
 ├── .gitignore
 ├── LICENSE
@@ -43,19 +59,25 @@ ppo-gymnasium-lunarlander/
 └── pyproject.toml
 ```
 
-## Quick Start
+## Usage
+
+Ensure you are in the ```ppo_gymnasium_lunarlander``` source directory where ```config.yaml``` is located before running these commands.
+
+```bash
+cd ppo_gymnasium_lunarlander
+```
 
 ### Training
 
-Train a PPO agent with the default configuration:
+Train a PPO agent with the default configuration.
 
 ```bash
-python -m ppo_gymnasium_lunarlander.train
+python -m train
 ```
 
 ### Configuration
 
-Edit ```config.yaml``` to customise training parameters such as learning rate, number of episodes, and more.
+Edit ```config.yaml``` to customise training parameters.
 
 ```yaml
 #Environment
@@ -90,31 +112,33 @@ seed: 42
 
 ### Enjoying a Trained Agent
 
-Watch a trained agent by running the enjoy script:
+Watch a trained agent by running the enjoy script. Point the artifact argument to your saved model file.
 
 ```bash
-python -m ppo_gymnasium_lunarlander.enjoy \
-    --artifact-path runs/ppo_YYYY-MM-DD_HHhMMmSSs/final_model.pt \
+python -m enjoy \
+    --artifact runs/ppo_LunarLander-v3_YYYY-MM-DD_HHhMMmSSs/final_model.pt \
     --num-episodes 5
 ```
 ### Exporting to Hugging Face Hub
 
-Share your trained model on the Hugging Face Hub:
+Share your trained model, config, and a replay video to the Hugging Face Hub.
 
 ```bash
-python -m ppo_gymnasium_lunarlander.export \
+python -m export \
     --username YOUR_HF_USERNAME \
     --repo-name ppo-gymnasium-lunarlander-v3 \
-    --artifact-path runs/ppo_YYYY-MM-DD_HHhMMmSSs/final_model.pt \
-    --movie-fps 30 
+    --artifact-path runs/ppo_LunarLander-v3_YYYY-MM-DD_HHhMMmSSs/final_model.pt \
+    --movie-fps 30 \
+    --n-eval 10
 ```
 
-This will:
+This will automatically:
 
-- Create a repository on Hugging Face Hub.
-- Upload the model weights, configuration, and evaluation results.
-- Generate and upload a replay movie.
-- Create a model card with usage instructions.
+- Upload the model weights and config.
+
+- Generate a model card with evaluation metrics (Mean Reward +/- Std).
+
+- Record and upload a video of the agent.
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
